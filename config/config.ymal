@@ -1,0 +1,10 @@
+app:
+name: go-user-auth-service
+env: dev
+port: 8080
+ mysql:
+ user: root
+ password: password123
+ dbname: user-servie-db
+ host: localhost
+ port: 3306
