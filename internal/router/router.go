@@ -16,15 +16,23 @@ func SetupRouter() *gin.Engine {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
+		if err := validate.Struct(user); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Validation failed", "details": err.Error()})
+			return
+		}
 		if err := config.DB.Create(&user).Error; err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not create user"()})
 			return
 		}
 		c.JSON(http.StatusCreated, gin.H{"user": user})
 	})
 
-	r.GET("/ping", func(c *gin.Context) {
-		c.JSON(200, gin.H{
+	r.GET("/users", func(c *gin.Context) {
+		var users []model.User
+		if err := config.DB.Find(&users).Error; err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		}
+		c.JSON(http.StatusOK, gin.H{
 			"hessage": "pong",
 		})
 	})
