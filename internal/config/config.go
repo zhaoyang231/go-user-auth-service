@@ -2,6 +2,7 @@ package config
 
 import (
 	"fmt"
+	"go-user-auth-service/internal/model"
 
 	"github.com/spf13/viper"
 	"gorm.io/driver/mysql"
@@ -41,5 +42,5 @@ func InitConfig() {
 	if err != nil {
 		panic(fmt.Errorf("connect mysql failed: &s", err))
 	}
-	DB.AutoMigrate(&mysql.User{})
+	DB.AutoMigrate(&model.User{})
 }

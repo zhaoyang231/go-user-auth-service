@@ -3,6 +3,7 @@ package router
 import (
 	"go-user-auth-service/internal/config"
 	"go-user-auth-service/internal/model"
+	"go-user-auth-service/internal/service"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -10,30 +11,32 @@ import (
 
 func SetupRouter() *gin.Engine {
 	r := gin.Default()
+	userService := service.UserService{}
 	r.POST("/users", func(c *gin.Context) {
 		var user model.User
-		if err := c.ShouldBindBodyWithJSON(&user); err != nil {
+		if err := c.ShouldBindJSON(&user); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
-		if err := validate.Struct(user); err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "Validation failed", "details": err.Error()})
+		if err := userService.CreateUser(&user); err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err})
 			return
 		}
 		if err := config.DB.Create(&user).Error; err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not create user"()})
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
 		}
 		c.JSON(http.StatusCreated, gin.H{"user": user})
 	})
 
 	r.GET("/users", func(c *gin.Context) {
-		var users []model.User
-		if err := config.DB.Find(&users).Error; err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		users, err := userService.GetAllUsers()
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err})
+			return
 		}
 		c.JSON(http.StatusOK, gin.H{
-			"hessage": "pong",
+			"users": users,
 		})
 	})
 	return r
